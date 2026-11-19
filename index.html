@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#038554">
+<meta name="theme-color" content="#1e3a5f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Fluxo de Caixa">
+<meta name="apple-mobile-web-app-title" content="Parcelos 2">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Fluxo de Caixa</title>
+<title>Parcelos 2</title>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23038554'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231e3a5f'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle'%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <!-- Aplica tema ANTES do CSS pintar -->
 <script>
 (function(){
   try {
-    var t = localStorage.getItem('parcelas_tema');
+    var t = localStorage.getItem('parcelos2_tema');
     if (!t) {
       t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
     }
@@ -30,15 +30,15 @@
 
 <style>
   :root {
-    --primaria: #038554;
-    --primaria-escura: #005227;
-    --primaria-clara: #68DDBD;
+    --primaria: #1e3a5f;
+    --primaria-escura: #0f2744;
+    --primaria-clara: #5b7bb5;
     
     --cinza-borda: #d1d5db;
     --cinza-texto: #4b5563;
-    --cinza-fundo: #f0fdfa;
+    --cinza-fundo: #f1f5f9;
     --branco: #ffffff;
-    --texto: #111827;
+    --texto: #0f172a;
     --vermelho: #dc2626;
     --laranja: #ea580c;
     
@@ -47,14 +47,14 @@
   }
 
   html[data-tema="escuro"] {
-    --primaria: #03B885;
-    --primaria-escura: #038554;
+    --primaria: #60a5fa;
+    --primaria-escura: #3b82f6;
     
-    --cinza-borda: #1f2937;
-    --cinza-texto: #9ca3af;
-    --cinza-fundo: #0f1419;
-    --branco: #1a1f26;
-    --texto: #e5e7eb;
+    --cinza-borda: #1e293b;
+    --cinza-texto: #94a3b8;
+    --cinza-fundo: #0f172a;
+    --branco: #1e293b;
+    --texto: #e2e8f0;
     --vermelho: #f87171;
     --laranja: #fb923c;
     --sombra: 0 1px 3px rgba(0,0,0,0.4);
@@ -168,7 +168,7 @@
   .form-card input:focus, .form-card select:focus {
     outline: none;
     border-color: var(--primaria);
-    box-shadow: 0 0 0 2px rgba(3,133,84,0.2);
+    box-shadow: 0 0 0 2px rgba(30,58,95,0.2);
   }
   .form-card button[type="submit"], .form-card button.btn-adicionar {
     grid-column: 1 / -1;
@@ -188,7 +188,7 @@
   }
   .combo-group select { flex: 1; }
 
-  /* ===== Tabela Fixa (Quadro Amarelo) ===== */
+  /* ===== Tabela Fixa ===== */
   .tabela-wrap {
     background: var(--branco);
     margin: 12px;
@@ -227,7 +227,7 @@
   tbody tr:last-child td { border-bottom: none; }
   
   tbody tr.mes-atual td {
-    background: rgba(3, 184, 133, 0.08);
+    background: rgba(30, 58, 95, 0.08);
     font-weight: 600;
   }
 
@@ -394,11 +394,11 @@
 <body>
 
 <header>
-  <h1>💸 Fluxo de Caixa</h1>
+  <h1>📦 Parcelos 2</h1>
   <button id="btn-tema" aria-label="Alternar tema"></button>
 </header>
 
-<!-- QUADRO VERMELHO: Formulário Híbrido -->
+<!-- Formulário Híbrido -->
 <div class="form-card">
   
   <!-- Seção 1: Lançamento Parcelado -->
@@ -494,7 +494,7 @@
 
 </div>
 
-<!-- QUADRO AMARELO: Tabela de Meses -->
+<!-- Tabela de Meses -->
 <div class="tabela-wrap" id="tabela-container">
   <table>
     <thead>
@@ -525,24 +525,20 @@
   </div>
 </div>
 
-<!-- Modal de Compras (Lista/Editar/Excluir/Quitar) -->
+<!-- Modal de Compras -->
 <div class="modal-overlay" id="modal-compras">
   <div class="modal">
     <h3>Gestão de Compras Parceladas</h3>
-    <div class="lista-compras" id="lista-compras">
-      <!-- Injetado via JS -->
-    </div>
+    <div class="lista-compras" id="lista-compras"></div>
     <button id="btn-fechar-compras">Fechar</button>
   </div>
 </div>
 
-<!-- NOVO: Modal de Edição/Exclusão de Manuais -->
+<!-- Modal de Manuais -->
 <div class="modal-overlay" id="modal-manuais">
   <div class="modal">
     <h3 id="manuais-titulo">Gerenciar Lançamentos Manuais</h3>
-    <div class="lista-compras" id="lista-manuais">
-      <!-- Injetado via JS -->
-    </div>
+    <div class="lista-compras" id="lista-manuais"></div>
     <button id="btn-fechar-manuais">Fechar</button>
   </div>
 </div>
@@ -603,16 +599,17 @@
 (function(){
   'use strict';
 
-  const K_COMPRAS     = 'fluxo_compras';
-  const K_MANUAIS     = 'fluxo_manuais';
-  const K_ANOTACOES   = 'fluxo_anotacoes';
-  const K_TEMA        = 'parcelas_tema';
+  // ===== CHAVES ÚNICAS DESTA VERSÃO (não misturam com a outra) =====
+  const K_COMPRAS     = 'parcelos2_compras';
+  const K_MANUAIS     = 'parcelos2_manuais';
+  const K_ANOTACOES   = 'parcelos2_anotacoes';
+  const K_TEMA        = 'parcelos2_tema';
 
   let compras = [];
   let manuais = [];
   let anotacoes = {};
   let mesAnoAtualEditando = null;
-  let mesAnoAtualManuais = null; // Para o modal de manuais
+  let mesAnoAtualManuais = null;
 
   const $ = (sel) => document.querySelector(sel);
   const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -872,7 +869,7 @@
     toast('Valor adicionado ao mês!');
   });
 
-  // ===== Ações na Tabela (Detalhes / Gerenciar Manuais) =====
+  // ===== Ações na Tabela =====
   $('#tbody-meses').addEventListener('click', (ev) => {
     const btn = ev.target.closest('.btn-acao');
     if (!btn) return;
@@ -955,7 +952,6 @@
         salvar();
         renderTabela();
         
-        // Atualiza a lista no modal
         const [ano, mes] = mesAnoAtualManuais.split('-');
         renderListaManuais(mesAnoAtualManuais, mes, ano);
         toast('Lançamento excluído');
@@ -970,7 +966,6 @@
           salvar();
           renderTabela();
           
-          // Atualiza a lista no modal
           const [ano, mes] = mesAnoAtualManuais.split('-');
           renderListaManuais(mesAnoAtualManuais, mes, ano);
           toast('Lançamento atualizado');
@@ -983,7 +978,7 @@
 
   $('#btn-fechar-manuais').addEventListener('click', () => $('#modal-manuais').classList.remove('aberto'));
 
-  // ===== Salvar Detalhes (Textarea) =====
+  // ===== Salvar Detalhes =====
   $('#btn-salvar-detalhes').addEventListener('click', () => {
     if (!mesAnoAtualEditando) return;
     let texto = $('#detalhes-texto').value;
@@ -1002,7 +997,7 @@
 
   $('#btn-fechar-detalhes').addEventListener('click', () => $('#modal-detalhes').classList.remove('aberto'));
 
-  // ===== Gestão de Compras Parceladas =====
+  // ===== Gestão de Compras =====
   const modalCompras = $('#modal-compras');
   const modalEditCompra = $('#modal-edit-compra');
   const modalQuitar = $('#modal-quitar');
@@ -1171,7 +1166,7 @@
     const dt = new Date();
     const stamp = `${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}`;
     a.href = url;
-    a.download = `fluxo-backup-${stamp}.json`;
+    a.download = `parcelos2-backup-${stamp}.json`;
     a.click();
     URL.revokeObjectURL(url);
     toast('Backup exportado');
