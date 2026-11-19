@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#038554">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fluxo de Caixa">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Fluxo de Caixa</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23038554'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle'%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<!-- Aplica tema ANTES do CSS pintar -->
+<script>
+(function(){
+  try {
+    var t = localStorage.getItem('parcelas_tema');
+    if (!t) {
+      t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+    }
+    document.documentElement.setAttribute('data-tema', t);
+  } catch(e) {
+    document.documentElement.setAttribute('data-tema', 'claro');
+  }
+})();
+</script>
+
+<style>
+  :root {
+    --primaria: #038554;
+    --primaria-escura: #005227;
+    --primaria-clara: #68DDBD;
+    
+    --cinza-borda: #d1d5db;
+    --cinza-texto: #4b5563;
+    --cinza-fundo: #f0fdfa;
+    --branco: #ffffff;
+    --texto: #111827;
+    --vermelho: #dc2626;
+    --laranja: #ea580c;
+    
+    --raio: 12px;
+    --sombra: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  html[data-tema="escuro"] {
+    --primaria: #03B885;
+    --primaria-escura: #038554;
+    
+    --cinza-borda: #1f2937;
+    --cinza-texto: #9ca3af;
+    --cinza-fundo: #0f1419;
+    --branco: #1a1f26;
+    --texto: #e5e7eb;
+    --vermelho: #f87171;
+    --laranja: #fb923c;
+    --sombra: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--cinza-fundo);
+    color: var(--texto);
+    min-height: 100vh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ===== Header ===== */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--branco);
+    border-bottom: 2px solid var(--primaria);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--sombra);
+  }
+  header h1 {
+    font-size: 18px;
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primaria);
+  }
+  #btn-tema {
+    background: transparent;
+    border: 1px solid var(--cinza-borda);
+    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--texto);
+  }
+
+  /* ===== Formulário ===== */
+  .form-card {
+    background: var(--branco);
+    margin: 12px;
+    padding: 12px;
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+  }
+  .form-secao {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--cinza-borda);
+  }
+  .form-secao:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .secao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .secao-header h3 { margin: 0; font-size: 14px; color: var(--primaria); }
+  
+  .btn-small {
+    background: transparent;
+    border: 1px solid var(--primaria);
+    color: var(--primaria);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .full { grid-column: 1 / -1; }
+  .form-card label {
+    display: block;
+    font-size: 11px;
+    color: var(--cinza-texto);
+    margin-bottom: 2px;
+    font-weight: 500;
+  }
+  .form-card input, .form-card select, .form-card textarea {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 15px;
+    border: 1px solid var(--cinza-borda);
+    border-radius: 8px;
+    background: var(--branco);
+    color: var(--texto);
+    font-family: inherit;
+  }
+  .form-card input:focus, .form-card select:focus {
+    outline: none;
+    border-color: var(--primaria);
+    box-shadow: 0 0 0 2px rgba(3,133,84,0.2);
+  }
+  .form-card button[type="submit"], .form-card button.btn-adicionar {
+    grid-column: 1 / -1;
+    padding: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--primaria);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  .combo-group {
+    display: flex;
+    gap: 6px;
+  }
+  .combo-group select { flex: 1; }
+
+  /* ===== Tabela Fixa (Quadro Amarelo) ===== */
+  .tabela-wrap {
+    background: var(--branco);
+    margin: 12px;
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+    max-height: 45vh; 
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--branco);
+    z-index: 2;
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 2px solid var(--primaria);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--primaria);
+    white-space: nowrap;
+    box-shadow: 0 4px 6px -4px rgba(0,0,0,0.1);
+  }
+  tbody td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--cinza-borda);
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  
+  tbody tr.mes-atual td {
+    background: rgba(3, 184, 133, 0.08);
+    font-weight: 600;
+  }
+
+  .valor { font-weight: 600; color: var(--primaria); }
+  .empty-row td {
+    text-align: center;
+    padding: 24px;
+    color: var(--cinza-texto);
+    font-style: italic;
+  }
+
+  .acoes-cell {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+  .btn-acao {
+    background: transparent;
+    border: 1px solid var(--cinza-borda);
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--texto);
+  }
+  .btn-acao.editar { color: var(--primaria); border-color: var(--primaria); }
+  .btn-acao.excluir { color: var(--vermelho); border-color: var(--vermelho); }
+
+  /* ===== Modais ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .modal-overlay.aberto { display: flex; }
+  .modal {
+    background: var(--branco);
+    border-radius: var(--raio);
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+  }
+  .modal h3 { margin: 0 0 12px; font-size: 16px; color: var(--primaria); }
+  .modal textarea {
+    width: 100%;
+    height: 120px;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid var(--cinza-borda);
+    border-radius: 8px;
+    background: var(--cinza-fundo);
+    color: var(--texto);
+    resize: none;
+    margin-bottom: 16px;
+    font-family: inherit;
+  }
+  .modal input, .modal select {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    border: 1px solid var(--cinza-borda);
+    border-radius: 8px;
+    background: var(--branco);
+    color: var(--texto);
+  }
+  .modal button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid var(--cinza-borda);
+    background: var(--branco);
+    color: var(--texto);
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .modal button.primario { background: var(--primaria); color: #fff; border: none; }
+  .modal button.perigo { background: var(--vermelho); color: #fff; border: none; }
+  .modal button.laranja { background: var(--laranja); color: #fff; border: none; }
+  .modal button:last-child { margin-bottom: 0; }
+
+  /* Lista de Itens no Modal */
+  .lista-compras {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-bottom: 10px;
+  }
+  .compra-item {
+    border: 1px solid var(--cinza-borda);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  .compra-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--texto);
+  }
+  .compra-item-info {
+    font-size: 12px;
+    color: var(--cinza-texto);
+    margin-bottom: 8px;
+  }
+  .compra-acoes {
+    display: flex;
+    gap: 6px;
+  }
+  .compra-acoes button {
+    flex: 1;
+    padding: 6px;
+    font-size: 12px;
+    margin-bottom: 0;
+  }
+
+  /* ===== Configurações ===== */
+  .config-bar {
+    margin: 20px 12px calc(20px + env(safe-area-inset-bottom));
+    text-align: center;
+  }
+  #btn-config {
+    background: transparent;
+    border: 1px solid var(--cinza-borda);
+    color: var(--texto);
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(20px);
+    background: var(--primaria-escura);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 200;
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.visivel { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>💸 Fluxo de Caixa</h1>
+  <button id="btn-tema" aria-label="Alternar tema"></button>
+</header>
+
+<!-- QUADRO VERMELHO: Formulário Híbrido -->
+<div class="form-card">
+  
+  <!-- Seção 1: Lançamento Parcelado -->
+  <div class="form-secao">
+    <div class="secao-header">
+      <h3>Adicionar Compra Parcelada</h3>
+      <button type="button" class="btn-small" id="btn-abrir-compras">Compras</button>
+    </div>
+    
+    <form id="form-compra" autocomplete="off">
+      <input type="hidden" id="edit-compra-id">
+      <div class="form-grid">
+        <div class="full">
+          <label for="in-desc">Descrição</label>
+          <input id="in-desc" type="text" maxlength="60" placeholder="Ex.: Comprar geladeira" required>
+        </div>
+        <div>
+          <label for="in-valor">Valor Total (R$)</label>
+          <input id="in-valor" type="text" inputmode="decimal" placeholder="3.000,00" required>
+        </div>
+        <div>
+          <label for="in-parcelas">Nº de parcelas</label>
+          <input id="in-parcelas" type="number" min="1" max="120" step="1" inputmode="numeric" placeholder="12" required>
+        </div>
+        <div class="full">
+          <label for="in-valor-parcela">Valor da Parcela (R$) <span style="color:var(--primaria);font-size:10px;">(Auto)</span></label>
+          <input id="in-valor-parcela" type="text" inputmode="decimal" placeholder="250,00" required>
+        </div>
+        <div class="full">
+          <label>Início (mês/ano)</label>
+          <div class="combo-group">
+            <select id="in-mes" required>
+              <option value="" disabled selected>Mês</option>
+              <option value="01">Janeiro</option>
+              <option value="02">Fevereiro</option>
+              <option value="03">Março</option>
+              <option value="04">Abril</option>
+              <option value="05">Maio</option>
+              <option value="06">Junho</option>
+              <option value="07">Julho</option>
+              <option value="08">Agosto</option>
+              <option value="09">Setembro</option>
+              <option value="10">Outubro</option>
+              <option value="11">Novembro</option>
+              <option value="12">Dezembro</option>
+            </select>
+            <select id="in-ano" required>
+              <option value="" disabled selected>Ano</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" id="btn-lancar-parcelas">Lançar Parcelas</button>
+        <button type="button" id="btn-cancelar-edit" style="display:none; background:transparent; border:1px solid var(--cinza-borda); color:var(--texto);">Cancelar Edição</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Seção 2: Lançamento Manual -->
+  <div class="form-secao">
+    <h3 style="margin:0 0 10px; font-size:14px; color:var(--primaria);">Lançamento Manual</h3>
+    <div class="form-grid">
+      <div>
+        <label>Mês</label>
+        <select id="man-mes" required>
+          <option value="" disabled selected>Mês</option>
+          <option value="01">Janeiro</option>
+          <option value="02">Fevereiro</option>
+          <option value="03">Março</option>
+          <option value="04">Abril</option>
+          <option value="05">Maio</option>
+          <option value="06">Junho</option>
+          <option value="07">Julho</option>
+          <option value="08">Agosto</option>
+          <option value="09">Setembro</option>
+          <option value="10">Outubro</option>
+          <option value="11">Novembro</option>
+          <option value="12">Dezembro</option>
+        </select>
+      </div>
+      <div>
+        <label>Ano</label>
+        <select id="man-ano" required>
+          <option value="" disabled selected>Ano</option>
+        </select>
+      </div>
+      <div class="full">
+        <label for="man-valor">Valor (R$)</label>
+        <input id="man-valor" type="text" inputmode="decimal" placeholder="0,00" required>
+      </div>
+      <button type="button" class="btn-adicionar" id="btn-add-manual">Adicionar ao Mês</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- QUADRO AMARELO: Tabela de Meses -->
+<div class="tabela-wrap" id="tabela-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Mês/Ano</th>
+        <th>Valor Total</th>
+        <th style="text-align:right;">Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tbody-meses">
+      <tr class="empty-row"><td colspan="3">Nenhum lançamento futuro</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Configurações -->
+<div class="config-bar">
+  <button id="btn-config">⚙️ Configurações</button>
+</div>
+
+<!-- Modal de Detalhes -->
+<div class="modal-overlay" id="modal-detalhes">
+  <div class="modal">
+    <h3 id="detalhes-titulo">Detalhes do Mês</h3>
+    <textarea id="detalhes-texto" placeholder="Escreva suas anotações aqui..."></textarea>
+    <button class="primario" id="btn-salvar-detalhes">Salvar Anotações</button>
+    <button id="btn-fechar-detalhes">Fechar</button>
+  </div>
+</div>
+
+<!-- Modal de Compras (Lista/Editar/Excluir/Quitar) -->
+<div class="modal-overlay" id="modal-compras">
+  <div class="modal">
+    <h3>Gestão de Compras Parceladas</h3>
+    <div class="lista-compras" id="lista-compras">
+      <!-- Injetado via JS -->
+    </div>
+    <button id="btn-fechar-compras">Fechar</button>
+  </div>
+</div>
+
+<!-- NOVO: Modal de Edição/Exclusão de Manuais -->
+<div class="modal-overlay" id="modal-manuais">
+  <div class="modal">
+    <h3 id="manuais-titulo">Gerenciar Lançamentos Manuais</h3>
+    <div class="lista-compras" id="lista-manuais">
+      <!-- Injetado via JS -->
+    </div>
+    <button id="btn-fechar-manuais">Fechar</button>
+  </div>
+</div>
+
+<!-- Modal de Edição de Compra -->
+<div class="modal-overlay" id="modal-edit-compra">
+  <div class="modal">
+    <h3>Editar Compra</h3>
+    <input type="hidden" id="edit-id-hidden">
+    <label>Descrição</label>
+    <input type="text" id="edit-desc" required>
+    <label>Valor Total (R$)</label>
+    <input type="text" id="edit-valor-total" inputmode="decimal" required>
+    <label>Nº de Parcelas</label>
+    <input type="number" id="edit-parcelas" min="1" required>
+    <label>Valor da Parcela (R$)</label>
+    <input type="text" id="edit-valor-parcela" inputmode="decimal" required>
+    <label>Início</label>
+    <div class="combo-group" style="margin-bottom:10px;">
+      <select id="edit-mes" required></select>
+      <select id="edit-ano" required></select>
+    </div>
+    <button class="primario" id="btn-salvar-edit-compra">Salvar Alterações</button>
+    <button id="btn-cancelar-edit-compra">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal de Quitação -->
+<div class="modal-overlay" id="modal-quitar">
+  <div class="modal">
+    <h3>Quitar Compra</h3>
+    <p style="font-size:13px; color:var(--cinza-texto); margin-top:0;">As parcelas futuras serão removidas do fluxo e o valor restante será lançado na data escolhida.</p>
+    <input type="hidden" id="quitar-id-hidden">
+    <label>Data da Quitação</label>
+    <div class="combo-group" style="margin-bottom:10px;">
+      <select id="quitar-mes" required></select>
+      <select id="quitar-ano" required></select>
+    </div>
+    <button class="laranja" id="btn-confirmar-quitar">Confirmar Quitação</button>
+    <button id="btn-cancelar-quitar">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal configurações -->
+<div class="modal-overlay" id="modal-config">
+  <div class="modal">
+    <h3>⚙️ Configurações</h3>
+    <button class="primario" id="btn-exportar">📤 Exportar backup (JSON)</button>
+    <button id="btn-importar">📥 Importar backup (JSON)</button>
+    <input type="file" id="file-import" accept="application/json,.json" hidden>
+    <button id="btn-fechar-config">Fechar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  const K_COMPRAS     = 'fluxo_compras';
+  const K_MANUAIS     = 'fluxo_manuais';
+  const K_ANOTACOES   = 'fluxo_anotacoes';
+  const K_TEMA        = 'parcelas_tema';
+
+  let compras = [];
+  let manuais = [];
+  let anotacoes = {};
+  let mesAnoAtualEditando = null;
+  let mesAnoAtualManuais = null; // Para o modal de manuais
+
+  const $ = (sel) => document.querySelector(sel);
+  const fmtBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const hojeISO = () => new Date().toISOString();
+  const uid = (p) => p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+  const getMesNome = (m) => {
+    const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+    return meses[parseInt(m, 10) - 1];
+  };
+
+  const parseValor = (s) => {
+    if (typeof s === 'number') return s;
+    s = String(s).trim().replace(/\s/g,'');
+    if (!s) return NaN;
+    if (s.includes(',') && s.includes('.')) {
+      s = s.replace(/\./g,'').replace(',', '.');
+    } else if (s.includes(',')) {
+      s = s.replace(',', '.');
+    }
+    const n = parseFloat(s);
+    return isFinite(n) ? n : NaN;
+  };
+
+  const formatarInputValor = (val) => {
+    if (isNaN(val)) return '';
+    return val.toFixed(2).replace('.', ',');
+  };
+
+  function carregar() {
+    try {
+      compras = JSON.parse(localStorage.getItem(K_COMPRAS) || '[]') || [];
+      manuais = JSON.parse(localStorage.getItem(K_MANUAIS) || '[]') || [];
+      anotacoes = JSON.parse(localStorage.getItem(K_ANOTACOES) || '{}') || {};
+    } catch(e) {
+      compras = []; manuais = []; anotacoes = {};
+    }
+  }
+  function salvar() {
+    localStorage.setItem(K_COMPRAS, JSON.stringify(compras));
+    localStorage.setItem(K_MANUAIS, JSON.stringify(manuais));
+    localStorage.setItem(K_ANOTACOES, JSON.stringify(anotacoes));
+  }
+
+  let toastTimer = null;
+  function toast(msg) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('visivel');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('visivel'), 2400);
+  }
+
+  function popularSelects() {
+    const mesesOptions = `
+      <option value="" disabled selected>Mês</option>
+      <option value="01">Janeiro</option>
+      <option value="02">Fevereiro</option>
+      <option value="03">Março</option>
+      <option value="04">Abril</option>
+      <option value="05">Maio</option>
+      <option value="06">Junho</option>
+      <option value="07">Julho</option>
+      <option value="08">Agosto</option>
+      <option value="09">Setembro</option>
+      <option value="10">Outubro</option>
+      <option value="11">Novembro</option>
+      <option value="12">Dezembro</option>
+    `;
+    ['#in-mes', '#man-mes', '#edit-mes', '#quitar-mes'].forEach(sel => {
+      if ($(sel)) $(sel).innerHTML = mesesOptions;
+    });
+
+    const anoAtual = new Date().getFullYear();
+    const anoFuturo = Math.max(anoAtual + 10, 2026);
+    const anosOptions = `<option value="" disabled selected>Ano</option>` + 
+      Array.from({length: (anoFuturo - (anoAtual - 2)) + 1}, (_, i) => anoAtual - 2 + i)
+      .map(a => `<option value="${a}">${a}</option>`).join('');
+      
+    ['#in-ano', '#man-ano', '#edit-ano', '#quitar-ano'].forEach(sel => {
+      if ($(sel)) $(sel).innerHTML = anosOptions;
+    });
+  }
+
+  function calcularValorParcela() {
+    const valorTotal = parseValor($('#in-valor').value);
+    const parcelas = parseInt($('#in-parcelas').value, 10);
+    if (Number.isFinite(valorTotal) && valorTotal > 0 && Number.isInteger(parcelas) && parcelas > 0) {
+      $('#in-valor-parcela').value = formatarInputValor(valorTotal / parcelas);
+    }
+  }
+  $('#in-valor').addEventListener('input', calcularValorParcela);
+  $('#in-parcelas').addEventListener('input', calcularValorParcela);
+
+  function obterMesesAgrupados() {
+    const mapa = {};
+
+    compras.forEach(c => {
+      let m = c.mesInicio;
+      let a = c.anoInicio;
+      
+      for (let i = 1; i <= c.totalParcelas; i++) {
+        if (i > c.parcelasPagas) {
+          const chave = `${a}-${String(m).padStart(2, '0')}`;
+          if (!mapa[chave]) mapa[chave] = { ano: a, mes: m, valor: 0, descricoes: [] };
+          
+          mapa[chave].valor += c.valorParcela;
+          mapa[chave].descricoes.push(`${c.descricao} (${i}/${c.totalParcelas}) - Total: ${fmtBRL.format(c.valorTotal)} | Parcela: ${fmtBRL.format(c.valorParcela)}`);
+        }
+        m++;
+        if (m > 12) { m = 1; a++; }
+      }
+    });
+
+    manuais.forEach(m => {
+      const chave = `${m.ano}-${String(m.mes).padStart(2, '0')}`;
+      if (!mapa[chave]) mapa[chave] = { ano: m.ano, mes: m.mes, valor: 0, descricoes: [] };
+      mapa[chave].valor += m.valor;
+    });
+
+    return Object.values(mapa).sort((a, b) => {
+      if (a.ano !== b.ano) return a.ano - b.ano;
+      return a.mes - b.mes;
+    });
+  }
+
+  function renderTabela() {
+    const tbody = $('#tbody-meses');
+    tbody.innerHTML = '';
+
+    const agrupados = obterMesesAgrupados();
+
+    if (agrupados.length === 0) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="3">Nenhum lançamento futuro</td></tr>';
+      return;
+    }
+
+    const agora = new Date();
+    const anoAtual = agora.getFullYear();
+    const mesAtual = String(agora.getMonth() + 1).padStart(2, '0');
+
+    agrupados.forEach(item => {
+      const tr = document.createElement('tr');
+      const isAtual = (item.ano == anoAtual && item.mes == mesAtual);
+      if (isAtual) tr.classList.add('mes-atual');
+
+      tr.innerHTML = `
+        <td>
+          ${getMesNome(item.mes)} / ${item.ano}
+          ${isAtual ? '<br><span style="font-size:10px;color:var(--primaria);text-transform:uppercase;">Mês Atual</span>' : ''}
+        </td>
+        <td class="valor">${fmtBRL.format(item.valor)}</td>
+        <td>
+          <div class="acoes-cell">
+            <button class="btn-acao editar" data-chave="${item.ano}-${item.mes}" data-acao="detalhes">Detalhes</button>
+            <button class="btn-acao editar" data-chave="${item.ano}-${item.mes}" data-acao="editar-manuais" title="Gerenciar manuais">✏️</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    setTimeout(() => {
+      const elAtual = tbody.querySelector('.mes-atual');
+      if (elAtual) {
+        const container = $('#tabela-container');
+        const thead = container.querySelector('thead');
+        const scrollTarget = elAtual.offsetTop - thead.offsetHeight;
+        container.scrollTop = scrollTarget;
+      }
+    }, 100);
+  }
+
+  $('#form-compra').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    
+    const editId = $('#edit-compra-id').value;
+    const desc = $('#in-desc').value.trim();
+    const total = parseInt($('#in-parcelas').value, 10);
+    const valorTotal = parseValor($('#in-valor').value);
+    const valorParcela = parseValor($('#in-valor-parcela').value);
+    const mes = parseInt($('#in-mes').value, 10);
+    const ano = parseInt($('#in-ano').value, 10);
+
+    if (!desc || !Number.isInteger(total) || !Number.isFinite(valorTotal) || !Number.isFinite(valorParcela) || !mes || !ano) {
+      toast('Preencha todos os campos corretamente'); return;
+    }
+
+    if (editId) {
+      const compra = compras.find(c => c.id === editId);
+      if (compra) {
+        compra.descricao = desc;
+        compra.totalParcelas = total;
+        compra.valorTotal = valorTotal;
+        compra.valorParcela = valorParcela;
+        compra.mesInicio = mes;
+        compra.anoInicio = ano;
+        toast('Compra atualizada com sucesso');
+      }
+      cancelarEdicaoForm();
+    } else {
+      compras.push({
+        id: uid('c'),
+        descricao: desc,
+        totalParcelas: total,
+        valorTotal: valorTotal,
+        valorParcela: valorParcela,
+        mesInicio: mes,
+        anoInicio: ano,
+        parcelasPagas: 0
+      });
+      toast('Parcelas lançadas com sucesso!');
+      $('#in-desc').value = '';
+      $('#in-valor').value = '';
+      $('#in-parcelas').value = '';
+      $('#in-valor-parcela').value = '';
+    }
+
+    salvar();
+    renderTabela();
+  });
+
+  function cancelarEdicaoForm() {
+    $('#edit-compra-id').value = '';
+    $('#form-compra').reset();
+    $('#btn-lancar-parcelas').textContent = 'Lançar Parcelas';
+    $('#btn-cancelar-edit').style.display = 'none';
+  }
+  $('#btn-cancelar-edit').addEventListener('click', cancelarEdicaoForm);
+
+  $('#btn-add-manual').addEventListener('click', () => {
+    const mes = parseInt($('#man-mes').value, 10);
+    const ano = parseInt($('#man-ano').value, 10);
+    const valor = parseValor($('#man-valor').value);
+
+    if (!mes || !ano || !Number.isFinite(valor) || valor <= 0) {
+      toast('Preencha mês, ano e valor corretamente'); return;
+    }
+
+    const agrupados = obterMesesAgrupados();
+    const temLancamento = agrupados.some(item => item.ano === ano && item.mes === mes);
+
+    if (temLancamento) {
+      if (!confirm(`O mês de ${getMesNome(mes)}/${ano} já possui lançamentos. Deseja adicionar este valor ao total?`)) {
+        return;
+      }
+    }
+
+    manuais.push({ id: uid('m'), mes, ano, valor });
+    salvar();
+    renderTabela();
+    
+    $('#man-mes').value = '';
+    $('#man-ano').value = '';
+    $('#man-valor').value = '';
+    
+    toast('Valor adicionado ao mês!');
+  });
+
+  // ===== Ações na Tabela (Detalhes / Gerenciar Manuais) =====
+  $('#tbody-meses').addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.btn-acao');
+    if (!btn) return;
+
+    const chave = btn.dataset.chave;
+    const acao = btn.dataset.acao;
+    const [ano, mes] = chave.split('-');
+    
+    if (acao === 'detalhes') {
+      mesAnoAtualEditando = chave;
+      const textoManual = anotacoes[chave] || '';
+
+      const agrupados = obterMesesAgrupados();
+      const mesDados = agrupados.find(x => x.ano == ano && x.mes == mes);
+      const descricoesAuto = mesDados ? mesDados.descricoes : [];
+
+      let textoFinal = '';
+      if (descricoesAuto.length > 0) {
+        textoFinal += "--- Compras Parceladas ---\n" + descricoesAuto.join('\n') + "\n\n";
+      }
+      if (textoManual) {
+        textoFinal += "--- Anotações Extras ---\n" + textoManual;
+      }
+
+      $('#detalhes-titulo').textContent = `Detalhes: ${getMesNome(mes)} / ${ano}`;
+      $('#detalhes-texto').value = textoFinal;
+      $('#modal-detalhes').classList.add('aberto');
+    } 
+    else if (acao === 'editar-manuais') {
+      mesAnoAtualManuais = chave;
+      renderListaManuais(chave, mes, ano);
+      $('#modal-manuais').classList.add('aberto');
+    }
+  });
+
+  // ===== Modal de Manuais =====
+  function renderListaManuais(chave, mes, ano) {
+    const lista = $('#lista-manuais');
+    lista.innerHTML = '';
+    
+    const filtrados = manuais.filter(m => m.ano == ano && m.mes == mes);
+
+    if (filtrados.length === 0) {
+      lista.innerHTML = '<p style="text-align:center;color:var(--cinza-texto);">Nenhum lançamento manual neste mês.</p>';
+      return;
+    }
+
+    $('#manuais-titulo').textContent = `Manuais: ${getMesNome(mes)} / ${ano}`;
+
+    filtrados.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'compra-item';
+      
+      div.innerHTML = `
+        <div class="compra-item-header">
+          <span>Lançamento Manual</span>
+          <span>${fmtBRL.format(m.valor)}</span>
+        </div>
+        <div class="compra-acoes" style="margin-top: 8px;">
+          <button class="btn-acao editar" data-id="${m.id}" data-acao="editar-manual">✏️ Editar</button>
+          <button class="btn-acao excluir" data-id="${m.id}" data-acao="excluir-manual">🗑️ Excluir</button>
+        </div>
+      `;
+      lista.appendChild(div);
+    });
+  }
+
+  $('#lista-manuais').addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button');
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    const acao = btn.dataset.acao;
+    const item = manuais.find(m => m.id === id);
+    if (!item) return;
+
+    if (acao === 'excluir-manual') {
+      if (confirm('Tem certeza que deseja excluir este lançamento manual?')) {
+        manuais = manuais.filter(m => m.id !== id);
+        salvar();
+        renderTabela();
+        
+        // Atualiza a lista no modal
+        const [ano, mes] = mesAnoAtualManuais.split('-');
+        renderListaManuais(mesAnoAtualManuais, mes, ano);
+        toast('Lançamento excluído');
+      }
+    } 
+    else if (acao === 'editar-manual') {
+      const novoValorStr = prompt("Digite o novo valor (R$):", formatarInputValor(item.valor));
+      if (novoValorStr !== null) {
+        const novoValor = parseValor(novoValorStr);
+        if (Number.isFinite(novoValor) && novoValor > 0) {
+          item.valor = novoValor;
+          salvar();
+          renderTabela();
+          
+          // Atualiza a lista no modal
+          const [ano, mes] = mesAnoAtualManuais.split('-');
+          renderListaManuais(mesAnoAtualManuais, mes, ano);
+          toast('Lançamento atualizado');
+        } else {
+          toast('Valor inválido');
+        }
+      }
+    }
+  });
+
+  $('#btn-fechar-manuais').addEventListener('click', () => $('#modal-manuais').classList.remove('aberto'));
+
+  // ===== Salvar Detalhes (Textarea) =====
+  $('#btn-salvar-detalhes').addEventListener('click', () => {
+    if (!mesAnoAtualEditando) return;
+    let texto = $('#detalhes-texto').value;
+    
+    if (texto.includes('--- Anotações Extras ---')) {
+      texto = texto.split('--- Anotações Extras ---')[1].trim();
+    } else if (texto.includes('--- Compras Parceladas ---')) {
+      texto = '';
+    }
+
+    anotacoes[mesAnoAtualEditando] = texto;
+    salvar();
+    $('#modal-detalhes').classList.remove('aberto');
+    toast('Anotações salvas');
+  });
+
+  $('#btn-fechar-detalhes').addEventListener('click', () => $('#modal-detalhes').classList.remove('aberto'));
+
+  // ===== Gestão de Compras Parceladas =====
+  const modalCompras = $('#modal-compras');
+  const modalEditCompra = $('#modal-edit-compra');
+  const modalQuitar = $('#modal-quitar');
+
+  $('#btn-abrir-compras').addEventListener('click', () => {
+    renderListaCompras();
+    modalCompras.classList.add('aberto');
+  });
+  $('#btn-fechar-compras').addEventListener('click', () => modalCompras.classList.remove('aberto'));
+
+  function renderListaCompras() {
+    const lista = $('#lista-compras');
+    lista.innerHTML = '';
+    if (compras.length === 0) {
+      lista.innerHTML = '<p style="text-align:center;color:var(--cinza-texto);">Nenhuma compra parcelada cadastrada.</p>';
+      return;
+    }
+
+    compras.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'compra-item';
+      const restantes = c.totalParcelas - c.parcelasPagas;
+      
+      div.innerHTML = `
+        <div class="compra-item-header">
+          <span></span>
+          <span>${fmtBRL.format(c.valorTotal)}</span>
+        </div>
+        <div class="compra-item-info">
+          Início: ${getMesNome(c.mesInicio)}/${c.anoInicio} • Parcela: ${fmtBRL.format(c.valorParcela)}<br>
+          Progresso: ${c.parcelasPagas}/${c.totalParcelas} (Restam ${restantes})
+        </div>
+        <div class="compra-acoes">
+          <button class="btn-acao editar" data-id="${c.id}" data-acao="editar">✏️ Editar</button>
+          <button class="btn-acao" data-id="${c.id}" data-acao="quitar" style="color:var(--laranja); border-color:var(--laranja);">🤝 Quitar</button>
+          <button class="btn-acao" data-id="${c.id}" data-acao="excluir" style="color:var(--vermelho); border-color:var(--vermelho);">🗑️ Excluir</button>
+        </div>
+      `;
+      div.querySelector('.compra-item-header span').textContent = c.descricao;
+      lista.appendChild(div);
+    });
+  }
+
+  $('#lista-compras').addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button');
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    const acao = btn.dataset.acao;
+    const compra = compras.find(c => c.id === id);
+    if (!compra) return;
+
+    if (acao === 'excluir') {
+      if (confirm(`Excluir a compra "${compra.descricao}"? Todas as parcelas futuras serão removidas.`)) {
+        compras = compras.filter(c => c.id !== id);
+        salvar();
+        renderListaCompras();
+        renderTabela();
+        toast('Compra excluída');
+      }
+    } 
+    else if (acao === 'editar') {
+      modalCompras.classList.remove('aberto');
+      modalEditCompra.classList.add('aberto');
+      
+      $('#edit-id-hidden').value = compra.id;
+      $('#edit-desc').value = compra.descricao;
+      $('#edit-valor-total').value = formatarInputValor(compra.valorTotal);
+      $('#edit-parcelas').value = compra.totalParcelas;
+      $('#edit-valor-parcela').value = formatarInputValor(compra.valorParcela);
+      $('#edit-mes').value = String(compra.mesInicio).padStart(2, '0');
+      $('#edit-ano').value = compra.anoInicio;
+    }
+    else if (acao === 'quitar') {
+      modalCompras.classList.remove('aberto');
+      modalQuitar.classList.add('aberto');
+      
+      $('#quitar-id-hidden').value = compra.id;
+      
+      let m = compra.mesInicio;
+      let a = compra.anoInicio;
+      for (let i = 1; i <= compra.parcelasPagas; i++) {
+        m++; if (m > 12) { m = 1; a++; }
+      }
+      $('#quitar-mes').value = String(m).padStart(2, '0');
+      $('#quitar-ano').value = a;
+    }
+  });
+
+  $('#btn-salvar-edit-compra').addEventListener('click', () => {
+    const id = $('#edit-id-hidden').value;
+    const compra = compras.find(c => c.id === id);
+    if (!compra) return;
+
+    compra.descricao = $('#edit-desc').value.trim();
+    compra.valorTotal = parseValor($('#edit-valor-total').value);
+    compra.totalParcelas = parseInt($('#edit-parcelas').value, 10);
+    compra.valorParcela = parseValor($('#edit-valor-parcela').value);
+    compra.mesInicio = parseInt($('#edit-mes').value, 10);
+    compra.anoInicio = parseInt($('#edit-ano').value, 10);
+
+    salvar();
+    modalEditCompra.classList.remove('aberto');
+    renderTabela();
+    toast('Compra editada com sucesso');
+  });
+  $('#btn-cancelar-edit-compra').addEventListener('click', () => modalEditCompra.classList.remove('aberto'));
+
+  $('#btn-confirmar-quitar').addEventListener('click', () => {
+    const id = $('#quitar-id-hidden').value;
+    const compra = compras.find(c => c.id === id);
+    if (!compra) return;
+
+    const mesQ = parseInt($('#quitar-mes').value, 10);
+    const anoQ = parseInt($('#quitar-ano').value, 10);
+
+    if (!mesQ || !anoQ) { toast('Selecione a data da quitação'); return; }
+
+    const restantes = compra.totalParcelas - compra.parcelasPagas;
+    if (restantes <= 0) {
+      toast('Esta compra já está totalmente paga.'); return;
+    }
+
+    const valorRestante = restantes * compra.valorParcela;
+    
+    manuais.push({
+      id: uid('m'),
+      mes: mesQ,
+      ano: anoQ,
+      valor: valorRestante
+    });
+
+    compra.parcelasPagas = compra.totalParcelas;
+
+    salvar();
+    modalQuitar.classList.remove('aberto');
+    renderTabela();
+    toast(`Compra quitada! R$ ${valorRestante.toFixed(2)} lançado em ${getMesNome(mesQ)}/${anoQ}`);
+  });
+  $('#btn-cancelar-quitar').addEventListener('click', () => modalQuitar.classList.remove('aberto'));
+
+  function temaAtual() {
+    return document.documentElement.getAttribute('data-tema') === 'escuro' ? 'escuro' : 'claro';
+  }
+  function atualizarIconeTema() {
+    $('#btn-tema').textContent = temaAtual() === 'escuro' ? '☀️' : '🌙';
+  }
+  function aplicarTema(t) {
+    document.documentElement.setAttribute('data-tema', t);
+    try { localStorage.setItem(K_TEMA, t); } catch(e) {}
+    atualizarIconeTema();
+  }
+  $('#btn-tema').addEventListener('click', () => {
+    aplicarTema(temaAtual() === 'escuro' ? 'claro' : 'escuro');
+  });
+
+  const modalConfig = $('#modal-config');
+  $('#btn-config').addEventListener('click', () => modalConfig.classList.add('aberto'));
+  $('#btn-fechar-config').addEventListener('click', () => modalConfig.classList.remove('aberto'));
+  
+  $('#btn-exportar').addEventListener('click', () => {
+    const backup = { versao: 3, exportadoEm: hojeISO(), compras, manuais, anotacoes };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dt = new Date();
+    const stamp = `${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}`;
+    a.href = url;
+    a.download = `fluxo-backup-${stamp}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('Backup exportado');
+  });
+
+  $('#btn-importar').addEventListener('click', () => $('#file-import').click());
+
+  $('#file-import').addEventListener('change', (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    ev.target.value = '';
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!data || !Array.isArray(data.compras) || !Array.isArray(data.manuais)) {
+          toast('Arquivo de backup inválido'); return;
+        }
+        if (!confirm('Deseja substituir todos os dados atuais por este backup?')) return;
+
+        compras = data.compras;
+        manuais = data.manuais;
+        anotacoes = data.anotacoes || {};
+        salvar();
+        renderTabela();
+        modalConfig.classList.remove('aberto');
+        toast('Backup restaurado com sucesso');
+      } catch(e) {
+        toast('Erro ao ler o arquivo');
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  popularSelects();
+  carregar();
+  renderTabela();
+  atualizarIconeTema();
+  
+  $('#in-desc').focus();
+
+})();
+</script>
+</body>
+</html>
